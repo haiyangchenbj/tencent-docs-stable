@@ -2,7 +2,7 @@
 name: tencent-docs-stable
 slug: tencent-docs-stable
 displayName: Tencent Docs Stable Channel
-version: "1.0.3""
+version: "1.0.4"
 description: "Stable write path for Tencent Docs (腾讯文档) when the MCP connector fails. Use when any Tencent Docs write, upload, push, or paragraph insert fails or times out, when connector init reports no_token, or when long content truncates silently. Trigger keywords: tencent docs upload failed, tdoc_init no_token, 无token, 文档推送失败, 腾讯文档写入失败, 上传失败, connector timeout, insert paragraph failed, smart document push, 腾讯文档初始化失败, 内容被截断, 文档分块. Covers failure classification, token self-check, one retry then direct JSON-RPC fallback via runtime-resolved gateway config, 16KB chunking at paragraph boundaries, and read-back verification."
 description_zh: "腾讯文档写入通道稳定层：MCP 连接器失败（no_token / 超时 / 初始化失败）时的故障分类、token 自检、一次重试后 JSON-RPC 直连兜底（endpoint 运行时从配置解析，不硬编码），长内容 16KB 段落边界分块追加，写入后回读验证。"
 read_when: "Any Tencent Docs (腾讯文档) write, upload, or push fails; connector reports no_token / timeout / init failure; or before pushing content longer than ~8KB through the connector."
@@ -27,7 +27,7 @@ Purpose: make Tencent Docs writes survive connector failures. The MCP connector 
    - Read the MCP server configuration at runtime to discover the gateway endpoint. Never hardcode host, port, or token in scripts or skill text.
    - Send JSON-RPC requests over HTTP: method = tool name, params = tool arguments, same schema the connector uses.
    - For content above ~16KB, split at paragraph boundaries into chunks of ≤16KB and append sequentially (create document → append chunk 1 → append chunk 2 → ...). Appending whole documents in one call silently truncates or fails validation.
-5. [Deterministic] **Verify**: read back the document title and first paragraph; confirm appended chunk count equals the number sent. Report the document link.
+5. [Deterministic] **Verify**: read back the document title, first paragraph, and last paragraph of the final chunk; confirm appended chunk count equals the number sent and no chunk is empty or ends mid-paragraph. Report the document link.
 
 ## Hard Rules
 
