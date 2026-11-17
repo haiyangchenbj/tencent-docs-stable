@@ -2,7 +2,7 @@
 name: tencent-docs-stable
 slug: tencent-docs-stable
 displayName: Tencent Docs Stable Channel
-version: "1.0.4"
+version: "1.0.5"
 description: "Stable write path for Tencent Docs (腾讯文档) when the MCP connector fails. Use when any Tencent Docs write, upload, push, or paragraph insert fails or times out, when connector init reports no_token, or when long content truncates silently. Trigger keywords: tencent docs upload failed, tdoc_init no_token, 无token, 文档推送失败, 腾讯文档写入失败, 上传失败, connector timeout, insert paragraph failed, smart document push, 腾讯文档初始化失败, 内容被截断, 文档分块. Covers failure classification, token self-check, one retry then direct JSON-RPC fallback via runtime-resolved gateway config, 16KB chunking at paragraph boundaries, and read-back verification."
 description_zh: "腾讯文档写入通道稳定层：MCP 连接器失败（no_token / 超时 / 初始化失败）时的故障分类、token 自检、一次重试后 JSON-RPC 直连兜底（endpoint 运行时从配置解析，不硬编码），长内容 16KB 段落边界分块追加，写入后回读验证。"
 read_when: "Any Tencent Docs (腾讯文档) write, upload, or push fails; connector reports no_token / timeout / init failure; or before pushing content longer than ~8KB through the connector."
@@ -43,7 +43,7 @@ Purpose: make Tencent Docs writes survive connector failures. The MCP connector 
 - `no_token` after self-check: report which credential source was checked and what was missing; stop. Do not invent a token.
 - Both connector and fallback fail (one attempt each): mark the target UNREACHABLE with both error messages as evidence; do not keep polling.
 - Validation error on content: check for unsupported HTML constructs (tables, nested lists, images with external hosts); degrade to plain paragraphs and retry once.
-- Rate limit: wait 60s, retry once, then stop.
+- Rate limit: wait 60s and retry once — this is the single Step 3 retry (Hard Rule: exactly one retry), so a 429 from the direct JSON-RPC fallback is not retried; mark the target UNREACHABLE instead.
 
 ## Output Format
 
